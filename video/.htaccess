@@ -1,0 +1,19 @@
+# .htaccess-Datei für Passwortschutz
+#RewriteEngine on
+#RewriteCond %{HTTPS%} off
+#RewriteRule ^(.*)$ https://%{HTTP_HOST)%{REQUEST_URI} [L,R=301]
+
+# this is for mgpsrv
+AuthType Basic
+AuthName "Geschützter Bereich - Bitte geben Sie ein Passwort ein!"
+AuthUserFile /var/www/html/.htpasswd
+Require valid user
+
+AddType video/ogg .ogg
+AddType video/mp4 .mp4
+AddType video/webm .webm
+AddType video/MP2T .ts
+AddType video/mp2t .ts
+AddType application/x-mpegURL .m3u8
+
+
