@@ -29,7 +29,7 @@ Der Aufruf vonstreamrec.sh erfolgt dann via at Scheduler mit einer Steuerdatei z
 wobei das Command-File sprint.cmd folgenden Inhalt hat:  
 `/home/mgpsrv/bin/streamrec.sh -t 2000 -n 1 -f sprint.mp4 2>&1`
 Wichtig ist hier der absolute Pfad zu streamrec.sh, auch wenn der in $PATH enthalten ist !  
-Der Ordner video beinhaltet das Web-Interface zum Aubruf der Videos durch die Besucher, er ist als Unterordner von /var/www/html (=Webroot) auf dem Webserver gedacht.  
+Der Ordner video beinhaltet das Web-Interface zum Abruf der Videos durch die Besucher, er ist als Unterordner von /var/www/html (=Webroot) auf dem Webserver gedacht.  
 Dorthin müssen auch die Aufzeichnungen von ffmpeg gespeichert werden (siehe streamrec.sh).  
 Die Seite selbst wurde mit [Pelican](https://getpelican.com/) erstellt, es ist eine einfache, aber dennoch responsive Seite die wenig Ressourcen beansprucht.  
 Die Sourcen (ohne Theme) sind im Ordner pelican.
