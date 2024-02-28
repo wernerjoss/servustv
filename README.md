@@ -1,5 +1,6 @@
 # ServusTv
-### A private Repo which holds everything necessary to avoid geoblocking :-)  
+### A private Repo which holds everything necessary to avoid geoblocking
+### All you need is a tiny Server located in Austria :smile: 
 
 Eine Beschreibung der Problematik zum Thema findet sich [hier](https://hoernerfranzracing.de/werner/kde-linux-web/tips-and-tricks/vpn).  
 Die Implementierung des dort genannten Plan A findet sich nun hier und kann auf Anfrage interessierten Personen zur Vefügung gestellt werden.
