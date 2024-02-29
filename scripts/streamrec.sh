@@ -134,6 +134,7 @@ if [ "$type" = "mp4" ];then
 	echo "<video controls style='max-width: 960px;'>" >> $WorkDir/vid.inc.php
 	echo "<source src=$tsname type='video/mp4'>" >> $WorkDir/vid.inc.php
 	echo "</video>" >> $WorkDir/vid.inc.php
+	rm $WorkDir/$tsbase?.mp4	# remove obsolete mp4 chunks 29.2.
 else
 	# convert HLS to mp4
 	if [ -f $WorkDir/$tsbase.mp4 ];then 
@@ -144,6 +145,6 @@ else
 		exit
 	fi
 	ffmpeg -i $RecFile -codec copy $WorkDir/$tsbase.mp4
+	# TODO: remove obsolete .ts snippets, rewrite vid.inc.php for final mp4 only
 fi
 
-# TODO: move $tsbase.mp4 to archive, with Naming from racelist.csv

@@ -678,6 +678,7 @@ mokutil
 mount
 mysql-common
 nano
+ncftp
 ncurses-base
 ncurses-bin
 needrestart
@@ -719,6 +720,7 @@ pocketsphinx-en-us
 polkitd
 poppler-data
 procps
+proftpd
 psmisc
 python-apt-common
 python3
