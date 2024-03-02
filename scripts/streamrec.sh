@@ -13,7 +13,7 @@ WorkDir="/var/www/html/video"	# no Trailing Slash !
 # WorkDir="$HOME/tmp/video"	# local Test - must NOT be ~/tmp/video !
 RecFile="sprint.mp4"	# just File Name without Path
 NumParts=2	# #No. of Parts
-# verbose=1
+# dryrun=1
 
 while getopts ":u:t:n:f:" opt; do
 	case $opt in 
@@ -44,7 +44,7 @@ tsname=$(basename "${RecFile}")	# now obsolete, but should not matter :-)
 tsbase=`echo $tsname | awk -F . '{print $1}'`
 type=`echo $tsname | awk -F . '{print $2}'`
 
-if [ "$verbose" ];then
+if [ "$dryrun" ];then
 	echo $StreamUrl
 	echo $WorkDir
 	echo $RecTime
@@ -65,20 +65,22 @@ if [ -f "$WorkDir/vid.inc.php" ];then
 	rm $WorkDir/vid.inc.php
 fi
 touch "$WorkDir/vid.inc.php"   # avoid php warning file not found
+absRecFile="$WorkDir/$tsbase.$type"
 	
 if [ "$type" = "mp4" ];then
 	for (( Num=0; Num<NumParts; Num++ )) ; {
 		incRecFile="$tsbase$Num.mp4"
-		absRecFile="$WorkDir/$tsbase$Num.mp4"
+		absRecFile="$WorkDir/$tsbase$Num.mp4"	# absRecFile is now numbered snippet !
 		if [ -f "$absRecFile" ]; then
 			echo "removing $absRecFile"
 			rm -f $absRecFile
 		fi
-		if [ ! -z $verbose ]; then
+		if [ ! -z $dryrun ]; then
 			echo $absRecFile
 			echo "Simulation, nothing recorded :-)"
 		else
 			# Video Recording goes here
+			echo "recording $absRecFile"
 			ffmpeg -n -user_agent $UserAgent -i $StreamUrl -t $RecTime -c copy $absRecFile	# mp4 Recording, reloded :-)
 			# display recorded part $Num AFTER record finished
 			echo "<video controls style='max-width: 960px;'>" >> $WorkDir/vid.inc.php
@@ -86,8 +88,9 @@ if [ "$type" = "mp4" ];then
 			echo "</video>" >> $WorkDir/vid.inc.php
         fi
 	}
+	absRecFile="$WorkDir/$tsbase.$type"	# restore Name for Result
 else
-	if [ ! -z $verbose ]; then
+	if [ ! -z $dryrun ]; then
 		echo $RecFile
 		echo "Simulation, nothing recorded :-)"
 	else
@@ -107,30 +110,35 @@ else
 		echo "<a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>" >> $WorkDir/vid.inc.php
 		echo "</p>" >> $WorkDir/vid.inc.php
 		echo "</video-js>" >> $WorkDir/vid.inc.php
-		ffmpeg -n -user_agent $UserAgent -i $StreamUrl -t $RecTime -c:v libx264 -crf 21 -preset veryfast -c:a aac -b:a 128k -ac 2 -f hls -hls_time 4 -hls_playlist_type event $RecFile
+		echo "recording $RecFile"
+		ffmpeg -n -user_agent $UserAgent -i $StreamUrl -t $RecTime -c:v libx264 -crf 21 -preset veryfast -c:a aac -b:a 128k -ac 2 -f hls -hls_time 4 -hls_playlist_type event $absRecFile
 	fi
 fi
 
-if [ "$verbose" ];then
-	echo "exit"
-fi
 if [ -f "$WorkDir/videos.txt" ];then
 	rm $WorkDir/videos.txt
 fi
-sleep $(($NumParts * $RecTime))       #       sleep total Recording Time before creating final video 28.2.
+
+if [ "$type" = "mp4" ];then
+	if [ "$NumParts" -gt "1" ]; then
+		echo "waiting $(($NumParts * $RecTime)) Seconds before creating final Video..."
+		sleep $(($NumParts * $RecTime))       #       sleep total Recording Time before creating final video 28.2.
+	fi
+fi
+	
 if [ "$type" = "mp4" ];then
 	if [ -f $WorkDir/$tsbase.mp4 ];then 
 		rm $WorkDir/$tsbase.mp4	# avoid ffmpeg Error if mp4 File exists
 	fi
 	for f in $WorkDir/$tsbase*.mp4; do echo "file '$f'" >> $WorkDir/videos.txt; done
-	if [ "$verbose" ];then
+	if [ "$dryrun" ];then
 		echo "command:"
-		echo "ffmpeg -safe 0 -f concat -i $WorkDir/videos.txt -c copy $WorkDir/$tsbase.mp4"
+		echo "ffmpeg -safe 0 -f concat -i $WorkDir/videos.txt -c copy $absRecFile"
 		exit
 	fi
-	ffmpeg -safe 0 -f concat -i $WorkDir/videos.txt -c copy $WorkDir/$tsbase.mp4
+	ffmpeg -safe 0 -f concat -i $WorkDir/videos.txt -c copy $absRecFile
 	# display final recorded Video $Num AFTER record finished
-	echo "<h3>Final Video:</h3>" > $WorkDir/vid.inc.php	# 28.2.: rewrite vid.inc.php when all recording finished !
+	echo "<h3>Final Video $tsname:</h3>" > $WorkDir/vid.inc.php	# 28.2.: rewrite vid.inc.php when all recording finished !
 	echo "<video controls style='max-width: 960px;'>" >> $WorkDir/vid.inc.php
 	echo "<source src=$tsname type='video/mp4'>" >> $WorkDir/vid.inc.php
 	echo "</video>" >> $WorkDir/vid.inc.php
@@ -140,11 +148,16 @@ else
 	if [ -f $WorkDir/$tsbase.mp4 ];then 
 		rm $WorkDir/$tsbase.mp4	# avoid ffmpeg Error if mp4 File exists
 	fi
-	if [ "$verbose" ];then
-		echo "ffmpeg -i $RecFile -codec copy $WorkDir/$tsbase.mp4"
+	if [ "$dryrun" ];then
+		echo "ffmpeg -i $RecFile -codec copy $WorkDir/$tsbase.mp4"	# convert m3u8 to mp4
 		exit
 	fi
-	ffmpeg -i $RecFile -codec copy $WorkDir/$tsbase.mp4
-	# TODO: remove obsolete .ts snippets, rewrite vid.inc.php for final mp4 only
+	ffmpeg -i $RecFile -codec copy $WorkDir/$tsbase.mp4	# convert m3u8 to mp4
+	# DONE: remove obsolete .ts snippets, rewrite vid.inc.php for final mp4 only:
+	rm $WorkDir/*.ts
+	echo "<h3>Final Video $tsbase.mp4:</h3>" > $WorkDir/vid.inc.php	# 28.2.: rewrite vid.inc.php when all recording finished !
+	echo "<video controls style='max-width: 960px;'>" >> $WorkDir/vid.inc.php
+	echo "<source src=$tsbase.mp4 type='video/mp4'>" >> $WorkDir/vid.inc.php
+	echo "</video>" >> $WorkDir/vid.inc.php
 fi
 

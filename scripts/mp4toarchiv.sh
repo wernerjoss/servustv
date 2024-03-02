@@ -92,7 +92,10 @@ if ([ "$plsbase" == "sprint" ] || [ "$plsbase" == "race" ]);then
 			rm "$plsbase"*".m3u8"	# remove Playlist
 			rm "$plsbase"*".ts"	# remove .ts video snippets
 		else
-			rsync -t $playlist $OutFile
+			# rsync -t $playlist $OutFile
+			mv $playlist $OutFile	# move to archiv folder, with appr. name
+			rm $playlist
+			ln -s $OutFile $playlist	# link archived video to WorkDir
 			rm "$plsbase"?".mp4"	# remove mp4 chunks
 		fi
 	else
