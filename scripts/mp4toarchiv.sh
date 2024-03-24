@@ -10,12 +10,12 @@ playlist="sprint.mp4"
 plsbase=`echo $playlist | awk -F \. '{print $1}'`
 # verbose=1
 
-while getopts ":w:p:" opt; do
+while getopts ":w:f:" opt; do
 	case $opt in 
 	w)
 		WorkDir=$OPTARG
 		;;
-	p)
+	f)
 		playlist=$OPTARG
 		;;
 	\?)
@@ -94,18 +94,21 @@ if ([ "$plsbase" == "sprint" ] || [ "$plsbase" == "race" ]);then
 		else
 			# rsync -t $playlist $OutFile
 			mv $playlist $OutFile	# move to archiv folder, with appr. name
-			rm $playlist
-			ln -s $OutFile $playlist	# link archived video to WorkDir
-			rm "$plsbase"?".mp4"	# remove mp4 chunks
+			# rm $playlist
+			# ln -s $OutFile $playlist	# link archived video to WorkDir	-	obsolete, wil not work anyway
+			# rm "$plsbase"?".mp4"	# remove mp4 chunks, should already be done by cropvideo.sh
 		fi
 	else
 		echo "$playlist not found, nothing converted !"
 		popd
 		exit	# stop here
 	fi
-	# generate archiv.inc.php for Include in index.php
-	echo "<a href='$OutFile'>$event.mp4</a>" >> $WorkDir/archiv.inc.php
-	
+	# update (expand) archiv.inc.php for Include in index.php
+	echo "<a href='archiv/$event.mp4'>$event.mp4</a></br>" >> $WorkDir/archiv.inc.php
+	# rewrite vid.inc.php (Symlinks won't work here !)
+	echo "<video controls style='max-width: 960px;'>" > $WorkDir/vid.inc.php
+	echo "<source src='archiv/$event.mp4' type='video/mp4'>" >> $WorkDir/vid.inc.php
+	echo "</video>" >> $WorkDir/vid.inc.php
 	if [ "$curdir" != "$WorkDir" ];then
 		popd
 	fi
